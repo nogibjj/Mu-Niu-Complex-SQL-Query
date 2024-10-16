@@ -1,6 +1,6 @@
 from mylib.extract import extract
-# from mylib.transform import load_database
-# from mylib.query import query
+from mylib.transform import load_database
+from mylib.query import query
 import os
 from dotenv import load_dotenv
 from databricks import sql
@@ -13,6 +13,7 @@ def test_extract():
 
 def test_load():
     load_dotenv()
+    load = load_database()
     with sql.connect(
         server_hostname=os.getenv("SERVER_HOSTNAME"),
         http_path=os.getenv("HTTP_PATH"),
@@ -23,10 +24,12 @@ def test_load():
             result = cursor.fetchall()
             cursor.close()
             connection.close()
-        assert result is not None
+    assert load == "Load Success"
+    assert result is not None
 
 
 def test_query():
+    qt = query()
     complex_query = """
 SELECT
     s1.ParentalSupport,
@@ -50,6 +53,7 @@ ORDER BY s1.ParentalSupport DESC;
             cursor.execute(complex_query)
             result = cursor.fetchall()
     assert result is not None
+    assert qt == "Query Success"
 
 
 if __name__ == "__main__":

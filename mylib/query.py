@@ -1,83 +1,35 @@
-import sqlite3
+import os
+import csv
+from databricks import sql
+from dotenv import load_dotenv
 
-def create_CRUD(database, data):
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO student_performance (StudentID,Name,Gender,AttendanceRate,StudyHoursPerWeek,PreviousGrade,ExtracurricularActivities,ParentalSupport,FinalGrade) VALUES (?, ?, ?, ?, ?,?,?,?,?)", 
-        data
+
+def query(dataset="data/student_performance.csv"):
+    payload = csv.reader(open(dataset, newline=""), delimiter=",")
+    next(payload)
+    load_dotenv()
+    with sql.connect(server_hostname = os.getenv("SERVER_HOSTNAME"),
+                     http_path = os.getenv("HTTP_PATH"),
+                     access_token = os.getenv("DATABRICKS_KEY")) as connection:
+        c = connection.cursor()
+        c.execute(
+            """
+                SELECT
+                    s1.ParentalSupport,
+                    AVG(s1.ExtracurricularActivities) AS activity,
+                    AVG(s1.PreviousGrade) AS previous_grade,
+                    AVG(s1.FinalGrade) AS final_grade
+                FROM student_performance AS s1
+                JOIN student_performance AS s2
+                    USING (Name)
+                GROUP BY s1.ParentalSupport
+                ORDER BY s1.ParentalSupport DESC
+                """
         )
-    
-    conn.commit()
-
-    cursor.execute("SELECT * FROM student_performance")
-    all_records = cursor.fetchall()
-    print("Database content (create):")
-    for record in all_records:
-        print(record)
-
-    conn.close()
-        
-    print("Records have been successfully created.")
+        c.fetchall()
+        c.close()
+    return "Query Success"
 
 
-def read_CRUD(database):
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM student_performance")
-    results = cursor.fetchall()
-        
-    # Close the connection
-    conn.close()
-
-    print("Database content (read):")
-    for record in results:
-        print(record)
-
-    print("Records have been successfully retrieved.")
-    
-    return results
-
-
-def update_CRUD(database, StudentID, new_data):
-    # Connect to the database
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
-    # Update data
-    cursor.execute("UPDATE student_performance SET Name	= ?, Gender = ?, AttendanceRate = ?, StudyHoursPerWeek = ?, PreviousGrade = ?, ExtracurricularActivities = ?, ParentalSupport=?,FinalGrade=? WHERE StudentID=?",
-    (*new_data, StudentID))
-
-    conn.commit()
-
-    cursor.execute("SELECT * FROM student_performance")
-    all_records = cursor.fetchall()
-    print("Database content (update):")
-    for record in all_records:
-        print(record)
-
-    conn.close()
-
-    print("Records have been successfully updated.")
-
-
-def delete_CRUD(database, StudentID):
-    # Connect to the database
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
-    # Delete data
-    cursor.execute("DELETE FROM student_performance WHERE StudentID=?", (StudentID,))
-
-    conn.commit()
-
-    cursor.execute("SELECT * FROM student_performance")
-    all_records = cursor.fetchall()
-    print("Database content (delete):")
-    for record in all_records:
-        print(record)
-
-    conn.close()
-
-    print("Records have been successfully deleted.")
+if __name__ == "__main__":
+    query()

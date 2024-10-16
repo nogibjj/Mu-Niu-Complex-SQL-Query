@@ -129,6 +129,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+complex_sql/
+
 
 # Spyder project settings
 .spyderproject

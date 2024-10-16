@@ -8,7 +8,7 @@ def load_database(dataset="data/student_performance.csv", encoding="utf-8"):
     payload = csv.reader(open(dataset, newline=""), delimiter=",")
     next(payload)
 
-    load_dotenv(dotenv_path='../.env')
+    load_dotenv()
     with sql.connect(server_hostname = os.getenv("SERVER_HOSTNAME"),
                      http_path = os.getenv("HTTP_PATH"),
                      access_token = os.getenv("DATABRICKS_KEY")) as connection:
@@ -29,7 +29,12 @@ def load_database(dataset="data/student_performance.csv", encoding="utf-8"):
                 );
             """
             )
-            cursor.execute("SELECT * FROM student_performance")
+            string_sql = "INSERT INTO student_performance VAlUES"
+            for i in payload:
+                string_sql += "\n" + str(tuple(i)) + ","
+            string_sql = string_sql[:-1] + ";"
+            cursor.execute(string_sql)
+            
             cursor.close()
             connection.close()
     return "Load Success"

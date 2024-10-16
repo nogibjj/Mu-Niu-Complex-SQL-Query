@@ -8,7 +8,7 @@ def load_database(dataset="data/student_performance.csv", encoding="utf-8"):
     payload = csv.reader(open(dataset, newline=""), delimiter=",")
     next(payload)
 
-    load_dotenv()
+    load_dotenv(dotenv_path='../.env')
     with sql.connect(server_hostname = os.getenv("SERVER_HOSTNAME"),
                      http_path = os.getenv("HTTP_PATH"),
                      access_token = os.getenv("DATABRICKS_KEY")) as connection:

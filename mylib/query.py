@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 
 def query():
-    load_dotenv()
+    load_dotenv(dotenv_path='../.env')
     with sql.connect(server_hostname = os.getenv("SERVER_HOSTNAME"),
                      http_path = os.getenv("HTTP_PATH"),
                      access_token = os.getenv("DATABRICKS_KEY")) as connection:

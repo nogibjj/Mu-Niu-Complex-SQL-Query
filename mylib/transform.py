@@ -12,11 +12,9 @@ def load_database(dataset="data/student_performance.csv", encoding="utf-8"):
     with sql.connect(server_hostname = os.getenv("SERVER_HOSTNAME"),
                      http_path = os.getenv("HTTP_PATH"),
                      access_token = os.getenv("DATABRICKS_KEY")) as connection:
-        c = connection.cursor()
-        c.execute("DROP TABLE IF EXISTS student_performance")
-        result = c.fetchall()
-        if not result:
-            c.execute(
+        with connection.cursor() as cursor:
+            cursor.execute("DROP TABLE IF EXISTS student_performance")
+            cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS student_performance (
                     StudentID int,
@@ -28,14 +26,13 @@ def load_database(dataset="data/student_performance.csv", encoding="utf-8"):
                     ExtracurricularActivities int,
                     ParentalSupport string,
                     FinalGrade int
-                )
+                );
             """
             )
-        c.executemany("INSERT INTO student_performance VALUES (?,?,?,?,?,?,?,?,?)", 
-                      payload)
-        c.close()
+            cursor.execute("SELECT * FROM student_performance")
+            cursor.close()
+            connection.close()
     return "Load Success"
-
 
 
 if __name__ == '__main__':

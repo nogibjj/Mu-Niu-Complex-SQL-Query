@@ -1,56 +1,55 @@
 # Mu-Niu-SQL-Database
 
-[![SQL Run](https://github.com/nogibjj/Mu-Niu-SQL-Database/actions/workflows/hello.yml/badge.svg)](https://github.com/nogibjj/Mu-Niu-SQL-Database/actions/workflows/hello.yml)
+[![CI/CD Run](https://github.com/nogibjj/Mu-Niu-Complex-SQL-Query/actions/workflows/hello.yml/badge.svg)](https://github.com/nogibjj/Mu-Niu-Complex-SQL-Query/actions/workflows/hello.yml)
 
-This repository contains Python scripts and tools for interacting with an SQLite database, focusing on CRUD (Create, Read, Update, Delete) operations and data extraction from CSV files. The project demonstrates how to build and manage a SQLite database, load data into the database, and perform essential database manipulations using Python.
+### Project Overview
+This repository demonstrates how to work with complex SQL queries in Python, with a focus on connecting to Databricks SQL, transforming data, and building a pipeline for efficient data extraction, transformation, and querying. This project utilizes environment variables for secure access to the database, ensuring sensitive credentials are not exposed.
 
-## Project Overview
-This project revolves around creating, loading, and manipulating an SQLite database containing student performance data. The key functionalities include:
-1. Extracting CSV data from a remote source.
-2. Loading the extracted data into an SQLite database.
-3. Performing basic database operations like creating, reading, updating, and deleting records.
-
-
-### CRUD Operations
-
-1. Create
-```python
-from query import create_CRUD
-
-data = (11, "Luke", "male", 10, 23, 68, 4, "High", 100)
-create_CRUD("student_performance_DB.db", data)
-```
-
-
-2. Read
+### SQL Query & Result
 
 ```python
-from query import read_CRUD
-
-read_CRUD("student_performance_DB.db")
+SELECT
+    s1.ParentalSupport,
+    AVG(s1.ExtracurricularActivities) AS activity,
+    AVG(s1.PreviousGrade) AS previous_grade,
+    AVG(s1.FinalGrade) AS final_grade
+FROM default.student_performance AS s1
+JOIN default.student_performance AS s2
+    USING (Name)
+GROUP BY s1.ParentalSupport
+ORDER BY s1.ParentalSupport DESC;
 ```
 
-
-3. Update
-
-```python
-from query import update_CRUD
-
-new_data = (12, "Johnny", "Male", 80, 70, 70, 1, "Super High", 100)
-update_CRUD("student_performance_DB.db", 1, new_data)
-```
+| ParentalSupport | activity              | previous_grade      | final_grade         |
+|-----------------|-----------------------|---------------------|---------------------|
+| Medium          | 1.6666666666666667    | 81.33333333333333   | 83.33333333333333   |
+| Low             | 0.6666666666666666    | 65                  | 67.33333333333333   |
+| High            | 2                     | 85.5                | 87.5                |
 
 
-4. Delete
+### Code Explanation
 
-```python
-from query import delete_CRUD
+1. Data Source: The query pulls data from the student_performance table in the default schema. The table is aliased as s1 and s2 to allow for a self-join.
 
-delete_CRUD("student_performance_DB.db", 11)
-```
+2. Self-Join: The query is doing a self-join and it's not super meaningful for this case(just for the requirement).
 
-#### Successful Database Operations
+3. Aggregation Using AVG(): The query calculates the average for three different fields:
 
-![](sql1.png)
+* ExtracurricularActivities: Average number of extracurricular activities.
+* PreviousGrade: Average of students' previous grades.
+* FinalGrade: Average of students' final grades.
 
-![](sql2.png)
+4. Grouping by ParentalSupport:
+
+* The results are grouped by ParentalSupport, which categorizes the students based on the level of support they receive from their parents (e.g., High, Medium, Low).
+* For each group (High, Medium, Low), the query computes the average of the activities, previous grades, and final grades.
+
+5. Sorting the Results: The query orders the output by ParentalSupport in alphabetical descending order
+
+
+###  Result Interpretation
+
+This table suggests a positive correlation between parental support and both academic performance and extracurricular participation. Students with higher parental support tend to have:
+
+* Higher grades (both previous and final grades).
+* Greater involvement in extracurricular activities.
